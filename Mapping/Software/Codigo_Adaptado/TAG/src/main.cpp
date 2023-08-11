@@ -1,13 +1,25 @@
 #include <SPI.h>
+//necesarias para oled
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+//
 #include <HampelFilter.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include "DW1000Ranging.h"
 #include "link.h"
+
+//DEFINO TAMANIO DE OLED
+#define I2C_SDA 21
+#define I2C_SCL 22
+
+#define SCREEN_WIDTH 128 // OLED display width,  in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+// declare an SSD1306 display object connected to I2C
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
 //este
 #define DW_PIN_RST 27 
 #define DW_PIN_IRQ 34
@@ -121,6 +133,13 @@ void inactiveDevice(DW1000Device* device) {
 void display_uwb(struct MyLink *p){
     struct MyLink *temp = p;
     int row = 0;
+    display.clearDisplay(); // clear display
+
+    display.setTextSize(1);         // set text size
+    display.setTextColor(SSD1306_WHITE);    // set text color
+    display.setCursor(0, 10);       // set position to display
+    display.println("HOLA"); // set text
+    display.display();              // display on OLED
 
     if (temp->next == NULL){
 
@@ -129,7 +148,7 @@ void display_uwb(struct MyLink *p){
     while (temp->next != NULL){
         temp = temp->next;
         char c[30];
-        sprintf(c, "%x %.1fm", temp->anchor_addr, temp->range[0]);
+        //sprintf(c, "%x %.1fm", temp->anchor_addr, temp->range[0]);
 
         if (row >= 4){
           break;
@@ -147,6 +166,9 @@ void send_udp(String *msg_json){
 }
 
 void Task1code( void * pvParameters ){
+  Wire.begin(I2C_SDA,I2C_SCL);
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
 
 
   while (true){
@@ -156,7 +178,7 @@ void Task1code( void * pvParameters ){
         runtime = millis();
     }
     if ((millis() - runtime_display) > 1000){
-        //display_uwb(uwb_data);
+        display_uwb(uwb_data);
         runtime_display = millis();
     }
     delay(10);
@@ -217,6 +239,21 @@ void setup() {
               &Task1,      /* Task handle to keep track of created task */
               0);          /* pin task to core 0 */
   delay(500);
+
+  // initialize OLED display with I2C address 0x3C
+  // 
+  // if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+  //   Serial.println(F("failed to start SSD1306 OLED"));
+  //   while (1);
+  // }
+         // wait two seconds for initializing
+  // display.clearDisplay(); // clear display
+
+  // display.setTextSize(1);         // set text size
+  // display.setTextColor(WHITE);    // set text color
+  // display.setCursor(0, 10);       // set position to display
+  // display.println("HOLA"); // set text
+  // display.display();              // display on OLED
 
 }
 

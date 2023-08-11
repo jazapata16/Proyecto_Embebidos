@@ -10,7 +10,7 @@ METER_TO_PIXEL = 150
 ANCHOR_ID_1 = "1786"
 AHCHOR_ID_2 = "1785"
 
-Serial = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200,timeout=0.01)
+Serial = serial.Serial(port='COM4', baudrate=115200,timeout=0.01)
 
 class ReadLine:
     def __init__(self, s):
@@ -146,12 +146,13 @@ def read_data():
     try:
         data_line = ReadLine(Serial).readline().decode()
         uwb_list = []
-        uwb_data = json.loads(data_line)
-        print(uwb_data)
+        uwb_data = json.loads(data_line) 
         uwb_list = uwb_data["links"]
+        print(data_line)
 
     except:
-        exit()
+        pass
+        #exit()
     return uwb_list
 
 
